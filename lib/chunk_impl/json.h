@@ -11,7 +11,7 @@ public:
         : Chunk(path) {
     }
 
-    std::vector<std::shared_ptr<document::Document>> Read(const std::optional<std::unordered_set<std::string>>& columns = std::nullopt) const override;
+    std::vector<std::shared_ptr<document::Document>> Read(const TreeNodePtr& tree = TreeNode::Default()) const override;
     void Write(const std::vector<std::shared_ptr<document::Document>>& documents) const override;
 };
 

@@ -11,7 +11,6 @@ struct ReadArgs {
     bool write_to_stdout;
 };
 
-
 void RunRead(ReadArgs&& args);
 
 } // namespace cli

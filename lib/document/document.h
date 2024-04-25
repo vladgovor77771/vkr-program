@@ -18,13 +18,15 @@ enum class TypeId {
     kList,
 };
 
+std::string TypeIdToString(TypeId id);
+
 class Value {
 protected:
     const TypeId type_id_;
 
 public:
     Value(TypeId type_id);
-    TypeId Id() const;
+    TypeId GetTypeId() const;
 };
 
 class Null: public Value {

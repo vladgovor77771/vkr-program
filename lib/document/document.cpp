@@ -2,11 +2,38 @@
 
 namespace lib::document {
 
+std::string TypeIdToString(TypeId id) {
+    switch (id) {
+        case TypeId::kNull:
+            return "null";
+        case TypeId::kBoolean:
+            return "boolean";
+        case TypeId::kInt32:
+            return "int32";
+        case TypeId::kUint32:
+            return "uint32";
+        case TypeId::kInt64:
+            return "int64";
+        case TypeId::kUint64:
+            return "uint64";
+        case TypeId::kFloat32:
+            return "float32";
+        case TypeId::kFloat64:
+            return "float64";
+        case TypeId::kString:
+            return "string";
+        case TypeId::kDocument:
+            return "document";
+        case TypeId::kList:
+            return "list";
+    }
+}
+
 Value::Value(TypeId type_id)
     : type_id_(type_id) {
 }
 
-TypeId Value::Id() const {
+TypeId Value::GetTypeId() const {
     return type_id_;
 }
 

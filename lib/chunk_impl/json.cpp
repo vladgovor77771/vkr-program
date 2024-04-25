@@ -7,12 +7,13 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include <lib/chunk_impl/escape.h>
+#include <lib/chunk_impl/get_stream.h>
 
 namespace lib::chunk_impl {
 
 namespace {
-    std::shared_ptr<document::Value> ParseRapidJsonValue(rapidjson::Value&& value, const std::optional<std::unordered_set<std::string>>& columns, const std::string& root) {
+
+    std::shared_ptr<document::Value> ParseRapidJsonValue(rapidjson::Value&& value, const TreeNodePtr& root) {
         if (value.IsNull()) {
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Null>());
         }
@@ -44,10 +45,17 @@ namespace {
             document::ValueMap doc_map;
             for (auto&& m : value.GetObject()) {
                 auto key = m.name.GetString();
-                auto column_name = root + '.' + EscapeDot(key);
-                if (!columns.has_value() || columns.value().find(column_name) != columns.value().end()) {
-                    doc_map[key] = ParseRapidJsonValue(std::move(m.value), columns, column_name);
+                if (root->IsLeaf()) {
+                    doc_map[key] = ParseRapidJsonValue(std::move(m.value), root);
+                    continue;
                 }
+
+                const auto it = root->children.find(key);
+                if (it == root->children.end()) {
+                    continue;
+                }
+
+                doc_map[key] = ParseRapidJsonValue(std::move(m.value), it->second);
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Document>(std::move(doc_map)));
         }
@@ -56,7 +64,7 @@ namespace {
             document::ValueList list;
             list.reserve(arr.Size());
             for (auto&& v : arr) {
-                list.push_back(ParseRapidJsonValue(std::move(v), columns, root));
+                list.push_back(ParseRapidJsonValue(std::move(v), root));
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::List>(std::move(list)));
         }
@@ -64,7 +72,7 @@ namespace {
         throw std::runtime_error("Type is not supported");
     }
 
-    std::shared_ptr<document::Document> ReadJsonLine(std::string&& line, const std::optional<std::unordered_set<std::string>>& columns) {
+    std::shared_ptr<document::Document> ReadJsonLine(std::string&& line, const TreeNodePtr& tree) {
         rapidjson::Document doc;
 
         if (doc.Parse(line.c_str()).HasParseError()) {
@@ -75,21 +83,13 @@ namespace {
             throw std::runtime_error("JSON is not an object");
         }
 
-        return std::static_pointer_cast<document::Document>(ParseRapidJsonValue(doc.GetObject(), columns, ""));
+        return std::static_pointer_cast<document::Document>(ParseRapidJsonValue(doc.GetObject(), tree));
     }
 
 } // namespace
 
-std::vector<std::shared_ptr<document::Document>> JsonChunk::Read(const std::optional<std::unordered_set<std::string>>& columns) const {
-    auto stream = &std::cin;
-    if (path != "stdout") {
-        auto file = std::make_unique<std::ifstream>(path);
-        if (file->is_open()) {
-            stream = file.get();
-        } else {
-            throw std::runtime_error("Couldn't open input stream");
-        }
-    }
+std::vector<std::shared_ptr<document::Document>> JsonChunk::Read(const TreeNodePtr& tree) const {
+    auto stream = GetInputStream(path);
 
     std::string line;
     std::vector<std::shared_ptr<document::Document>> res;
@@ -98,16 +98,17 @@ std::vector<std::shared_ptr<document::Document>> JsonChunk::Read(const std::opti
             break;
         }
 
-        res.emplace_back(ReadJsonLine(std::move(line), columns));
+        res.emplace_back(ReadJsonLine(std::move(line), tree));
     }
 
     return res;
 }
 
 namespace {
+
     rapidjson::Value ValueToRapidJsonValue(const std::shared_ptr<document::Value>& value, rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator) {
         rapidjson::Value rj_value;
-        switch (value->Id()) {
+        switch (value->GetTypeId()) {
             case document::TypeId::kNull:
                 rj_value.SetNull();
                 return rj_value;
@@ -172,15 +173,7 @@ namespace {
 } // namespace
 
 void JsonChunk::Write(const std::vector<std::shared_ptr<document::Document>>& documents) const {
-    auto stream = &std::cout;
-    if (path != "stdout") {
-        auto file = std::make_unique<std::ofstream>(path);
-        if (file->is_open()) {
-            stream = file.get();
-        } else {
-            throw std::runtime_error("Couldn't open output stream");
-        }
-    }
+    auto stream = GetOutputStream(path);
 
     for (const auto& doc : documents) {
         *stream << DocumentToJson(doc) << '\n';

@@ -4,9 +4,10 @@
 #include <optional>
 #include <string>
 
+#include <lib/chunk_impl/prefix_tree.h>
 #include <lib/document/document.h>
 
-namespace lib {
+namespace lib::chunk_impl {
 
 class Chunk {
 public:
@@ -16,8 +17,8 @@ public:
         : path(path) {
     }
 
-    virtual std::vector<std::shared_ptr<document::Document>> Read(const std::optional<std::unordered_set<std::string>>& columns = std::nullopt) const = 0;
+    virtual std::vector<std::shared_ptr<document::Document>> Read(const TreeNodePtr& tree = TreeNode::Default()) const = 0;
     virtual void Write(const std::vector<std::shared_ptr<document::Document>>& documents) const = 0;
 };
 
-} // namespace lib
+} // namespace lib::chunk_impl

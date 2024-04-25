@@ -6,6 +6,6 @@
 
 namespace cli {
 
-std::shared_ptr<lib::Chunk> GetChunk(std::string&& path, std::string&& format);
+std::shared_ptr<lib::chunk_impl::Chunk> GetChunk(std::string&& path, std::string&& format);
 
 } // namespace cli
