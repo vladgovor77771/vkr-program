@@ -181,6 +181,8 @@ void BsonChunk::Write(const std::vector<std::shared_ptr<document::Document>>& do
         auto serialized = SerializeValue(std::static_pointer_cast<document::Value>(document));
         stream->write(&serialized[0], serialized.size());
     }
+
+    stream->flush();
 }
 
 } // namespace lib::chunk_impl

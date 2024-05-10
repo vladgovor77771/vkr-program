@@ -151,6 +151,20 @@ uint64_t Read8Bytes(std::istream& stream) {
     return result;
 }
 
+uint16_t Read2Bytes(std::istream& stream) {
+    uint16_t result = 0;
+    char buffer[2];
+
+    if (!stream.read(buffer, 2)) {
+        throw std::runtime_error("Failed to read 2 bytes from stream.");
+    }
+
+    result = static_cast<uint8_t>(buffer[0]) |
+             (static_cast<uint8_t>(buffer[1]) << 8);
+
+    return result;
+}
+
 uint32_t Read4Bytes(std::istream& stream) {
     uint32_t result = 0;
     char buffer[4];

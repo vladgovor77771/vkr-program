@@ -8,7 +8,7 @@
 namespace cli {
 
 void RunTransform(TransformArgs&& args) {
-    const auto input_chunk = GetChunk(std::move(args.input_path), std::move(args.input_format), "");
+    const auto input_chunk = GetChunk(std::move(args.input_path), std::move(args.input_format), std::string(args.schema_path));
     const auto output_chunk = GetChunk(std::move(args.output_path), std::move(args.output_format), std::move(args.schema_path));
 
     auto start = std::chrono::high_resolution_clock::now();

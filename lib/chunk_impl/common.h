@@ -26,8 +26,9 @@ bool IsPrimitiveControlChar(ControlChar cch);
 std::shared_ptr<document::Value> ReadPrimitiveValue(ControlChar cch, std::istream& stream);
 std::vector<char> SerializePrimitiveValue(const std::shared_ptr<document::Value>& value);
 
-uint64_t Read8Bytes(std::istream& stream);
+uint16_t Read2Bytes(std::istream& stream);
 uint32_t Read4Bytes(std::istream& stream);
+uint64_t Read8Bytes(std::istream& stream);
 float ReadFloat(std::istream& stream);
 double ReadDouble(std::istream& stream);
 std::string ReadString(std::istream& stream);
