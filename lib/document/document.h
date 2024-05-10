@@ -27,6 +27,7 @@ protected:
 public:
     Value(TypeId type_id);
     TypeId GetTypeId() const;
+    bool IsOfPrimitiveType() const;
 };
 
 class Null: public Value {

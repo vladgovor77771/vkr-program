@@ -69,7 +69,7 @@ namespace {
 } // namespace
 
 void RunRead(ReadArgs&& args) {
-    const auto chunk = GetChunk(std::move(args.path), std::move(args.format));
+    const auto chunk = GetChunk(std::move(args.path), std::move(args.format), "");
     const auto columns_tree = BuildPrefixTree(std::move(args.columns));
 
     const auto start = std::chrono::high_resolution_clock::now();
@@ -80,7 +80,7 @@ void RunRead(ReadArgs&& args) {
     std::cerr << "{\"read_duration_ns\": " << duration_read.count() << "}\n";
 
     if (args.write_to_stdout) {
-        const auto output_chunk = GetChunk("stdout", "json");
+        const auto output_chunk = GetChunk("stdout", "json", "");
         output_chunk->Write(documents);
     }
 }

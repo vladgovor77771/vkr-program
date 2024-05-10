@@ -47,6 +47,7 @@ namespace {
                 auto key = m.name.GetString();
                 if (root->IsLeaf()) {
                     doc_map[key] = ParseRapidJsonValue(std::move(m.value), root);
+                    std::cerr << key << ' ' << (int)doc_map[key]->GetTypeId() << '\n';
                     continue;
                 }
 
@@ -56,6 +57,7 @@ namespace {
                 }
 
                 doc_map[key] = ParseRapidJsonValue(std::move(m.value), it->second);
+                std::cerr << key << ' ' << (int)doc_map[key]->GetTypeId() << '\n';
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Document>(std::move(doc_map)));
         }
@@ -64,7 +66,9 @@ namespace {
             document::ValueList list;
             list.reserve(arr.Size());
             for (auto&& v : arr) {
+                std::cerr << "before" << '\n';
                 list.push_back(ParseRapidJsonValue(std::move(v), root));
+                std::cerr << "in arr " << (int)list.back()->GetTypeId() << '\n';
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::List>(std::move(list)));
         }
@@ -146,7 +150,7 @@ namespace {
                 }
                 return rj_value;
             }
-            case document::TypeId::kList:
+            case document::TypeId::kList: {
                 rj_value.SetArray();
                 const auto& derived = std::static_pointer_cast<document::List>(value);
                 for (const auto& v : derived->value) {
@@ -154,6 +158,7 @@ namespace {
                     rj_value.PushBack(std::move(obj_value), allocator);
                 }
                 return rj_value;
+            }
         }
     }
 

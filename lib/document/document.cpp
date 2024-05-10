@@ -37,6 +37,10 @@ TypeId Value::GetTypeId() const {
     return type_id_;
 }
 
+bool Value::IsOfPrimitiveType() const {
+    return type_id_ < TypeId::kDocument;
+}
+
 Null::Null()
     : Value(TypeId::kNull) {
 }
