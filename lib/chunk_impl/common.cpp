@@ -1,5 +1,6 @@
 #include "common.h"
 
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -67,8 +68,7 @@ std::shared_ptr<document::Value> ReadPrimitiveValue(ControlChar cch, std::istrea
             auto val = ReadString(stream);
             return std::static_pointer_cast<document::Value>(std::make_shared<document::String>(std::move(val)));
         }
-        case ControlChar::kDocumentFlag:
-        case ControlChar::kListFlag:
+        default:
             throw std::runtime_error("Not primitive value");
     }
 }
@@ -126,8 +126,7 @@ std::vector<char> SerializePrimitiveValue(const std::shared_ptr<document::Value>
             result.insert(result.end(), std::make_move_iterator(serialized.begin()), std::make_move_iterator(serialized.end()));
             return result;
         }
-        case document::TypeId::kDocument:
-        case document::TypeId::kList:
+        default:
             throw std::runtime_error("Not primitive value");
     }
 }

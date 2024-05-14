@@ -1,6 +1,7 @@
 #include "dataset_generator.h"
 
 #include <unordered_set>
+#include <algorithm>
 #include <ctime>
 
 #include <rapidjson/document.h>

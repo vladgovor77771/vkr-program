@@ -1,6 +1,7 @@
 #include "field_descriptor.h"
 
 #include <unordered_set>
+#include <algorithm>
 #include <sstream>
 
 namespace lib::chunk_impl::dremel {

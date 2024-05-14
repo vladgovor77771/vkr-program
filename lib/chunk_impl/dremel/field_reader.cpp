@@ -48,8 +48,8 @@ Row FieldReader::ReadRow() {
     const auto value = ReadPrimitiveValue(*cch, *stream);
 
     return Row{
-        .definition_level = d,
         .repetition_level = r,
+        .definition_level = d,
         .value = value,
     };
 }

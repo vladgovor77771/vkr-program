@@ -1,5 +1,6 @@
 #include "assembly.h"
 
+#include <algorithm>
 #include <iostream>
 #include <queue>
 

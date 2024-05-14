@@ -26,6 +26,8 @@ std::string TypeIdToString(TypeId id) {
             return "document";
         case TypeId::kList:
             return "list";
+        default:
+            return "unknown";
     }
 }
 
