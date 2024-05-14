@@ -18,4 +18,7 @@ target_include_directories(lib-chunk-impl PUBLIC
 
 target_link_libraries(lib-chunk-impl PUBLIC
     lib-document
+    lib-dremel
 )
+
+add_subdirectory(dremel)

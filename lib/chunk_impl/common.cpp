@@ -1,6 +1,7 @@
 #include "common.h"
 
 #include <memory>
+#include <vector>
 
 namespace lib::chunk_impl {
 
@@ -132,7 +133,7 @@ std::vector<char> SerializePrimitiveValue(const std::shared_ptr<document::Value>
 }
 
 uint64_t Read8Bytes(std::istream& stream) {
-    uint64_t result = 0;
+    std::uint64_t result = 0;
     char buffer[8];
 
     if (!stream.read(buffer, 8)) {
@@ -152,7 +153,7 @@ uint64_t Read8Bytes(std::istream& stream) {
 }
 
 uint16_t Read2Bytes(std::istream& stream) {
-    uint16_t result = 0;
+    std::uint16_t result = 0;
     char buffer[2];
 
     if (!stream.read(buffer, 2)) {
@@ -166,7 +167,7 @@ uint16_t Read2Bytes(std::istream& stream) {
 }
 
 uint32_t Read4Bytes(std::istream& stream) {
-    uint32_t result = 0;
+    std::uint32_t result = 0;
     char buffer[4];
 
     if (!stream.read(buffer, 4)) {
@@ -234,13 +235,13 @@ std::vector<char> Serialize8Bytes(uint64_t value) {
 }
 
 std::vector<char> SerializeFloat(float value) {
-    uint32_t temp;
+    std::uint32_t temp;
     std::memcpy(&temp, &value, sizeof(float));
     return Serialize4Bytes(temp);
 }
 
 std::vector<char> SerializeDouble(double value) {
-    uint64_t temp;
+    std::uint64_t temp;
     std::memcpy(&temp, &value, sizeof(double));
     return Serialize8Bytes(temp);
 }

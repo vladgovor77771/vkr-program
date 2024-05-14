@@ -47,7 +47,6 @@ namespace {
                 auto key = m.name.GetString();
                 if (root->IsLeaf()) {
                     doc_map[key] = ParseRapidJsonValue(std::move(m.value), root);
-                    std::cerr << key << ' ' << (int)doc_map[key]->GetTypeId() << '\n';
                     continue;
                 }
 
@@ -57,7 +56,6 @@ namespace {
                 }
 
                 doc_map[key] = ParseRapidJsonValue(std::move(m.value), it->second);
-                std::cerr << key << ' ' << (int)doc_map[key]->GetTypeId() << '\n';
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Document>(std::move(doc_map)));
         }
@@ -66,9 +64,7 @@ namespace {
             document::ValueList list;
             list.reserve(arr.Size());
             for (auto&& v : arr) {
-                std::cerr << "before" << '\n';
                 list.push_back(ParseRapidJsonValue(std::move(v), root));
-                std::cerr << "in arr " << (int)list.back()->GetTypeId() << '\n';
             }
             return std::static_pointer_cast<document::Value>(std::make_shared<document::List>(std::move(list)));
         }

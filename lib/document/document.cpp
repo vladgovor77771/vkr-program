@@ -41,6 +41,10 @@ bool Value::IsOfPrimitiveType() const {
     return type_id_ < TypeId::kDocument;
 }
 
+bool Value::IsNull() const {
+    return type_id_ == TypeId::kNull;
+}
+
 Null::Null()
     : Value(TypeId::kNull) {
 }
@@ -90,6 +94,10 @@ String::String(std::string&& value)
     , value(std::move(value)) {
 }
 
+Document::Document()
+    : Value(TypeId::kDocument) {
+}
+
 Document::Document(const ValueMap& value)
     : Value(TypeId::kDocument)
     , value(value) {
@@ -98,6 +106,10 @@ Document::Document(const ValueMap& value)
 Document::Document(ValueMap&& value)
     : Value(TypeId::kDocument)
     , value(std::move(value)) {
+}
+
+List::List()
+    : Value(TypeId::kList) {
 }
 
 List::List(const ValueList& value)

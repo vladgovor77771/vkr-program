@@ -1,6 +1,8 @@
 #pragma once
 
+#include <unordered_map>
 #include <string>
+#include <vector>
 
 namespace lib::document {
 
@@ -28,6 +30,7 @@ public:
     Value(TypeId type_id);
     TypeId GetTypeId() const;
     bool IsOfPrimitiveType() const;
+    bool IsNull() const;
 };
 
 class Null: public Value {
@@ -55,13 +58,13 @@ public:
 
 class UInt32: public Value {
 public:
-    uint32_t value;
+    std::uint32_t value;
     UInt32(int32_t value);
 };
 
 class UInt64: public Value {
 public:
-    uint64_t value;
+    std::uint64_t value;
     UInt64(int64_t value);
 };
 
@@ -89,6 +92,7 @@ using ValueMap = std::unordered_map<std::string, std::shared_ptr<document::Value
 class Document: public Value {
 public:
     ValueMap value;
+    Document();
     Document(const ValueMap& value);
     Document(ValueMap&& value);
 };
@@ -98,6 +102,7 @@ using ValueList = std::vector<std::shared_ptr<Value>>;
 class List: public Value {
 public:
     ValueList value;
+    List();
     List(const ValueList& value);
     List(ValueList&& value);
 };

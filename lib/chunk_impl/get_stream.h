@@ -3,8 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-
-// #include <lib/chunk_impl/dremel/node.h>
+#include <vector>
 
 namespace lib::chunk_impl {
 

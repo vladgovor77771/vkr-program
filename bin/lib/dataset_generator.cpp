@@ -25,7 +25,7 @@ namespace {
         return static_cast<double>(std::rand()) / RAND_MAX;
     }
 
-    std::string RandomString(const size_t len) {
+    std::string RandomString(const std::size_t len) {
         static const char alphanum[] =
             "0123456789"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -46,7 +46,7 @@ namespace {
     }
 
     rapidjson::Value GenerateSchemaImpl(
-        size_t cur_depth,
+        std::size_t cur_depth,
         const SchemaGeneratorArgs& args,
         rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator) {
         rapidjson::Value schema;
