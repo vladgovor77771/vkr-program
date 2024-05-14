@@ -69,7 +69,7 @@ namespace {
 } // namespace
 
 void RunRead(ReadArgs&& args) {
-    const auto chunk = GetChunk(std::move(args.path), std::move(args.format), "");
+    const auto chunk = GetChunk(std::move(args.path), std::move(args.format), std::move(args.schema_path));
     const auto columns_tree = BuildPrefixTree(std::move(args.columns));
 
     const auto start = std::chrono::high_resolution_clock::now();

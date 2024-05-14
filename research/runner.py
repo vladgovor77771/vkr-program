@@ -23,7 +23,9 @@ def run_cli(command):
         raise e
 
 
-def run_transform(binary, input_path, input_format, output_path, output_format):
+def run_transform(
+    binary, input_path, input_format, output_path, output_format, schema_path=None
+):
     command = [
         binary,
         "transform",
@@ -36,14 +38,21 @@ def run_transform(binary, input_path, input_format, output_path, output_format):
         "--output-format",
         output_format,
     ]
+    if schema_path is not None:
+        command.append("--schema-path")
+        command.append(schema_path)
     _, stderr = run_cli(command)
     return json.loads(stderr)
 
 
-def run_read(binary, path, format, partial_request=[]):
-    command = [binary, "transform", "--path", path, "--format", format]
+def run_read(binary, path, format, *, schema_path=None, partial_request=[]):
+    command = [binary, "read", "--path", path, "--format", format]
     if len(partial_request) > 0:
         command.append(",".join(partial_request))
+    if schema_path is not None:
+        command.append("--schema-path")
+        command.append(schema_path)
+
     _, stderr = run_cli(command)
     return json.loads(stderr)
 
