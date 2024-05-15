@@ -48,6 +48,7 @@ def run_transform(
 def run_read(binary, path, format, *, schema_path=None, partial_request=[]):
     command = [binary, "read", "--path", path, "--format", format]
     if len(partial_request) > 0:
+        command.append("--columns")
         command.append(",".join(partial_request))
     if schema_path is not None:
         command.append("--schema-path")
