@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     read->add_option("--format", read_args.format, "Data format.")->required();
     read->add_option("--columns", read_args.columns, "Columns to read.");
     read->add_option("--schema-path", read_args.schema_path, "Schema for columnar format.");
-    read->add_flag("--write-to-stdout", read_args.write_to_stdout, "Write output to stdout in JSONLINE format.");
+    read->add_option("--write-to-stdout", read_args.write_to_stdout, "Write output to stdout in JSONLINE format.")->default_val(false);
 
     cli::DatasetGeneratorArgs dataset_generator_args;
     CLI::App* generate_dataset = app.add_subcommand(
