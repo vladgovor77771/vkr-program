@@ -3,7 +3,6 @@
 #include <filesystem>
 
 #include <lib/chunk_impl/common.h>
-#include <lib/chunk_impl/get_stream.h>
 
 namespace lib::chunk_impl::dremel {
 
@@ -19,7 +18,7 @@ FieldWriter::FieldWriter(
     , chunk_path_(chunk_path) {
 }
 
-std::shared_ptr<std::ostream> FieldWriter::GetOrCreateStream() {
+std::shared_ptr<OStream> FieldWriter::GetOrCreateStream() {
     if (stream != nullptr) {
         return stream;
     }
@@ -53,7 +52,7 @@ void FieldWriter::WritePrimitiveImpl(RepetitionLevel r, DefinitionLevel d, const
     res.insert(res.end(), value_serialized.begin(), value_serialized.end());
 
     auto stream = GetOrCreateStream();
-    stream->write(res.data(), res.size());
+    stream->Write(res.data(), res.size());
 }
 
 void FieldWriter::WriteImpl(RepetitionLevel r, DefinitionLevel d, const std::shared_ptr<document::Value>& value) {
@@ -126,8 +125,7 @@ void FieldWriter::FlushAll() {
         if (stream == nullptr) {
             return;
         }
-        stream->flush();
-        std::static_pointer_cast<std::ofstream>(stream)->close();
+        // stream->Flush();
         return;
     }
     for (const auto& child : children_) {

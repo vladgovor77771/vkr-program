@@ -35,7 +35,7 @@ private:
     int fd_ = -1;
     std::size_t file_size_ = 0;
     std::size_t current_pos_ = 0;
-    char* data_;
+    char* data_ = nullptr;
 };
 
 class StdinStream: public IStream {
@@ -51,12 +51,40 @@ public:
     std::string ReadLine() override;
 };
 
-struct OStreamDeleter {
-    std::vector<char> buffer;
-    void operator()(std::ostream* ptr) const;
+class OStream {
+public:
+    virtual void Write(const char* buffer, std::size_t length) = 0;
+    virtual void Flush() = 0;
 };
 
-std::shared_ptr<std::ostream> GetOutputStream(const std::string& path);
+class MmapFileWriter: public OStream {
+public:
+    MmapFileWriter(const char* filename, std::size_t initial_size);
+    ~MmapFileWriter();
+    void Write(const char* buffer, std::size_t length) override;
+    void Flush() override;
+
+private:
+    void Resize(std::size_t new_size);
+    void MapFile();
+
+    const char* filename_;
+    int fd_;
+    std::size_t size_;
+    std::size_t current_pos_;
+    std::size_t max_written_pos_;
+    char* data_ = nullptr;
+};
+
+class StdoutStream: public OStream {
+public:
+    StdoutStream() = default;
+    ~StdoutStream() = default;
+    void Write(const char* buffer, std::size_t length) override;
+    void Flush() override;
+};
+
+std::shared_ptr<OStream> GetOutputStream(const std::string& path);
 std::shared_ptr<IStream> GetInputStream(const std::string& path);
 
 } // namespace lib::chunk_impl

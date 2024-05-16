@@ -167,7 +167,8 @@ void RunGenerateDataset(DatasetGeneratorArgs&& args) {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         doc.Accept(writer);
 
-        *ostream << buffer.GetString() << '\n';
+        ostream->Write(buffer.GetString(), buffer.GetLength());
+        ostream->Write("\n", 1);
         std::cerr << "Generated " << i << '/' << args.docs_count << " documents\n";
     }
 }
@@ -185,7 +186,7 @@ void RunGenerateSchema(SchemaGeneratorArgs&& args) {
     doc.Accept(writer);
 
     auto stream = lib::chunk_impl::GetOutputStream(args.output_path);
-    *stream << buffer.GetString();
+    stream->Write(buffer.GetString(), buffer.GetLength());
 }
 
 } // namespace cli

@@ -177,7 +177,9 @@ void JsonChunk::Write(const std::vector<std::shared_ptr<document::Document>>& do
     auto stream = GetOutputStream(path);
 
     for (const auto& doc : documents) {
-        *stream << DocumentToJson(doc) << '\n';
+        auto json = DocumentToJson(doc);
+        stream->Write(json.c_str(), json.size());
+        stream->Write("\n", 1);
     }
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lib/chunk_impl/dremel/field_descriptor.h>
+#include <lib/chunk_impl/get_stream.h>
 #include <lib/document/document.h>
 
 namespace lib::chunk_impl::dremel {
@@ -8,9 +9,9 @@ namespace lib::chunk_impl::dremel {
 class FieldWriter: public FieldDescriptor {
 private:
     std::shared_ptr<std::string> chunk_path_;
-    std::shared_ptr<std::ostream> stream;
+    std::shared_ptr<OStream> stream;
 
-    std::shared_ptr<std::ostream> GetOrCreateStream();
+    std::shared_ptr<OStream> GetOrCreateStream();
 
     void WriteNull(RepetitionLevel r, DefinitionLevel d);
     void WritePrimitiveImpl(RepetitionLevel r, DefinitionLevel d, const std::shared_ptr<document::Value>& value);

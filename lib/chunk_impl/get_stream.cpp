@@ -10,7 +10,8 @@
 
 namespace lib::chunk_impl {
 
-MmapFileReader::MmapFileReader(const char* filename) {
+MmapFileReader::MmapFileReader(const char* filename)
+    : current_pos_(0) {
     fd_ = open(filename, O_RDONLY);
     if (fd_ == -1) {
         throw std::runtime_error("Failed to open file");
@@ -28,8 +29,6 @@ MmapFileReader::MmapFileReader(const char* filename) {
         close(fd_);
         throw std::runtime_error("Failed to mmap file");
     }
-
-    current_pos_ = 0;
 }
 
 MmapFileReader::~MmapFileReader() {
@@ -120,35 +119,87 @@ std::string StdinStream::ReadLine() {
     return res;
 }
 
-void OStreamDeleter::operator()(std::ostream* ptr) const {
-    if (ptr != &std::cout) {
-        std::ofstream* ofs = dynamic_cast<std::ofstream*>(ptr);
-        if (ofs) {
-            ofs->flush();
-            ofs->close();
-            delete ofs;
-        }
+MmapFileWriter::MmapFileWriter(const char* filename, std::size_t initial_size)
+    : filename_(filename)
+    , size_(initial_size)
+    , current_pos_(0)
+    , max_written_pos_(0) {
+    fd_ = open(filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd_ == -1) {
+        throw std::runtime_error("Failed to open file");
+    }
+
+    Resize(size_);
+    MapFile();
+}
+
+MmapFileWriter::~MmapFileWriter() {
+    if (data_ != MAP_FAILED) {
+        msync(data_, max_written_pos_, MS_SYNC);
+        munmap(data_, size_);
+    }
+    if (fd_ != -1) {
+        ftruncate(fd_, max_written_pos_);
+        close(fd_);
     }
 }
 
-std::shared_ptr<std::ostream> GetOutputStream(const std::string& path) {
+void MmapFileWriter::Write(const char* buffer, std::size_t length) {
+    while (current_pos_ + length > size_) {
+        Resize(size_ * 2);
+        MapFile();
+    }
+    std::memcpy(data_ + current_pos_, buffer, length);
+    current_pos_ += length;
+    if (current_pos_ > max_written_pos_) {
+        max_written_pos_ = current_pos_;
+    }
+}
+
+void MmapFileWriter::Flush() {
+    if (msync(data_, max_written_pos_, MS_SYNC) == -1) {
+        throw std::runtime_error("Failed to sync file");
+    }
+}
+
+void MmapFileWriter::Resize(std::size_t new_size) {
+    if (ftruncate(fd_, new_size) == -1) {
+        close(fd_);
+        throw std::runtime_error("Failed to resize file");
+    }
+    size_ = new_size;
+}
+
+void MmapFileWriter::MapFile() {
+    if (data_ != MAP_FAILED) {
+        munmap(data_, size_);
+    }
+
+    data_ = static_cast<char*>(mmap(nullptr, size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
+    if (data_ == MAP_FAILED) {
+        close(fd_);
+        throw std::runtime_error("Failed to mmap file");
+    }
+}
+
+void StdoutStream::Write(const char* buffer, std::size_t length) {
+    std::cout.write(buffer, length);
+}
+
+void StdoutStream::Flush() {
+    std::cout.flush();
+}
+
+std::shared_ptr<OStream> GetOutputStream(const std::string& path) {
     if (path == "stdout") {
-        return std::shared_ptr<std::ostream>(&std::cout, OStreamDeleter());
+        return std::make_shared<StdoutStream>();
     } else {
-        OStreamDeleter deleter;
-        deleter.buffer.resize(32 * 1024);
-        std::ofstream* ofs = new std::ofstream();
-        ofs->rdbuf()->pubsetbuf(deleter.buffer.data(), deleter.buffer.size());
-        ofs->open(path);
-        if (!ofs->is_open()) {
-            throw std::runtime_error("Failed to open output file: " + path);
-        }
-        return std::shared_ptr<std::ostream>(ofs, std::move(deleter));
+        return std::make_shared<MmapFileWriter>(path.c_str(), 8 * 1024 * 1024);
     }
 }
 
 std::shared_ptr<IStream> GetInputStream(const std::string& path) {
-    if (path == "-") {
+    if (path == "stdin") {
         return std::make_shared<StdinStream>();
     } else {
         return std::make_shared<MmapFileReader>(path.c_str());
