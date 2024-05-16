@@ -8,7 +8,7 @@
 #include <lib/chunk_impl/dremel/assembly.h>
 #include <lib/chunk_impl/dremel/field_reader.h>
 #include <lib/chunk_impl/dremel/field_writer.h>
-#include <lib/chunk_impl/get_stream.h>
+#include <lib/chunk_impl/io.h>
 
 namespace lib::chunk_impl {
 

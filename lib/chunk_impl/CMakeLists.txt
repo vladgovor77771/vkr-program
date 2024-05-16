@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 add_library(lib-chunk-impl
     json.cpp
     bson.cpp
-    get_stream.cpp
+    io.cpp
     common.cpp
     columnar.cpp
 )

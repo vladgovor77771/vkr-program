@@ -8,7 +8,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include <lib/chunk_impl/get_stream.h>
+#include <lib/chunk_impl/io.h>
 
 namespace cli {
 

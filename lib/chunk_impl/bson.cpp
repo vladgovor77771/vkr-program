@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include <lib/chunk_impl/common.h>
-#include <lib/chunk_impl/get_stream.h>
+#include <lib/chunk_impl/io.h>
 
 namespace lib::chunk_impl {
 

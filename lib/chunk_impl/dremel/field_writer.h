@@ -1,7 +1,7 @@
 #pragma once
 
 #include <lib/chunk_impl/dremel/field_descriptor.h>
-#include <lib/chunk_impl/get_stream.h>
+#include <lib/chunk_impl/io.h>
 #include <lib/document/document.h>
 
 namespace lib::chunk_impl::dremel {

@@ -72,7 +72,6 @@ private:
     int fd_;
     std::size_t size_;
     std::size_t current_pos_;
-    std::size_t max_written_pos_;
     char* data_ = nullptr;
 };
 

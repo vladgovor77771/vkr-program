@@ -1,4 +1,4 @@
-#include "get_stream.h"
+#include "io.h"
 
 #include <sys/mman.h>
 #include <cstring>
@@ -123,7 +123,7 @@ MmapFileWriter::MmapFileWriter(const char* filename, std::size_t initial_size)
     : filename_(filename)
     , size_(initial_size)
     , current_pos_(0)
-    , max_written_pos_(0) {
+    , data_(nullptr) {
     fd_ = open(filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (fd_ == -1) {
         throw std::runtime_error("Failed to open file");
@@ -134,13 +134,21 @@ MmapFileWriter::MmapFileWriter(const char* filename, std::size_t initial_size)
 }
 
 MmapFileWriter::~MmapFileWriter() {
-    if (data_ != MAP_FAILED) {
-        msync(data_, max_written_pos_, MS_SYNC);
-        munmap(data_, size_);
+    if (data_ && data_ != MAP_FAILED) {
+        if (msync(data_, current_pos_, MS_SYNC) == -1) {
+            std::cerr << "Failed to sync memory: " << strerror(errno) << '\n';
+        }
+        if (munmap(data_, size_) == -1) {
+            std::cerr << "Failed to unmap memory: " << strerror(errno) << '\n';
+        }
     }
     if (fd_ != -1) {
-        ftruncate(fd_, max_written_pos_);
-        close(fd_);
+        if (ftruncate(fd_, current_pos_) == -1) {
+            std::cerr << "Failed to truncate file: " << strerror(errno) << '\n';
+        }
+        if (close(fd_) == -1) {
+            std::cerr << "Failed to close file: " << strerror(errno) << '\n';
+        }
     }
 }
 
@@ -149,36 +157,38 @@ void MmapFileWriter::Write(const char* buffer, std::size_t length) {
         Resize(size_ * 2);
         MapFile();
     }
-    std::memcpy(data_ + current_pos_, buffer, length);
-    current_pos_ += length;
-    if (current_pos_ > max_written_pos_) {
-        max_written_pos_ = current_pos_;
+    if (!std::memcpy(data_ + current_pos_, buffer, length)) {
+        throw std::runtime_error(std::string("Failed to copy memory: ") + strerror(errno));
     }
+    current_pos_ += length;
 }
 
 void MmapFileWriter::Flush() {
-    if (msync(data_, max_written_pos_, MS_SYNC) == -1) {
-        throw std::runtime_error("Failed to sync file");
+    if (msync(data_, current_pos_, MS_SYNC) == -1) {
+        throw std::runtime_error(std::string("Failed to sync file: ") + strerror(errno));
     }
 }
 
 void MmapFileWriter::Resize(std::size_t new_size) {
     if (ftruncate(fd_, new_size) == -1) {
         close(fd_);
-        throw std::runtime_error("Failed to resize file");
+        throw std::runtime_error(std::string("Failed to resize file: ") + strerror(errno));
     }
+    data_ = nullptr;
     size_ = new_size;
 }
 
 void MmapFileWriter::MapFile() {
-    if (data_ != MAP_FAILED) {
-        munmap(data_, size_);
+    if (data_ && data_ != MAP_FAILED) {
+        if (munmap(data_, size_) == -1) {
+            std::cerr << "Failed to unmap memory: " << strerror(errno) << '\n';
+        }
     }
 
-    data_ = static_cast<char*>(mmap(nullptr, size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0));
+    data_ = static_cast<char*>(mmap(nullptr, size_, PROT_WRITE, MAP_SHARED, fd_, 0));
     if (data_ == MAP_FAILED) {
         close(fd_);
-        throw std::runtime_error("Failed to mmap file");
+        throw std::runtime_error(std::string("Failed to mmap file: ") + strerror(errno));
     }
 }
 
