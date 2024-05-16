@@ -10,7 +10,7 @@
 
 namespace lib::chunk_impl {
 
-MmapFile::MmapFile(const char* filename) {
+MmapFileReader::MmapFileReader(const char* filename) {
     fd_ = open(filename, O_RDONLY);
     if (fd_ == -1) {
         throw std::runtime_error("Failed to open file");
@@ -32,7 +32,7 @@ MmapFile::MmapFile(const char* filename) {
     current_pos_ = 0;
 }
 
-MmapFile::~MmapFile() {
+MmapFileReader::~MmapFileReader() {
     if (data_ != MAP_FAILED) {
         munmap(data_, file_size_);
     }
@@ -41,7 +41,7 @@ MmapFile::~MmapFile() {
     }
 }
 
-void MmapFile::Seekg(int offset, std::ios_base::seekdir dir) {
+void MmapFileReader::Seekg(int offset, std::ios_base::seekdir dir) {
     if (dir == std::ios_base::beg) {
         current_pos_ = offset;
     } else if (dir == std::ios_base::cur) {
@@ -54,22 +54,22 @@ void MmapFile::Seekg(int offset, std::ios_base::seekdir dir) {
     }
 }
 
-int MmapFile::Peek() const {
+int MmapFileReader::Peek() const {
     if (current_pos_ < file_size_) {
         return static_cast<char>(data_[current_pos_]);
     }
     return EOF;
 }
 
-std::size_t MmapFile::Tellg() const {
+std::size_t MmapFileReader::Tellg() const {
     return current_pos_;
 }
 
-bool MmapFile::Eof() const {
+bool MmapFileReader::Eof() const {
     return current_pos_ >= file_size_;
 }
 
-void MmapFile::Read(char* buffer, std::size_t length) {
+void MmapFileReader::Read(char* buffer, std::size_t length) {
     if (current_pos_ + length > file_size_) {
         throw std::out_of_range("Read exceeds file size");
     }
@@ -77,7 +77,7 @@ void MmapFile::Read(char* buffer, std::size_t length) {
     current_pos_ += length;
 }
 
-void MmapFile::Get(char& ch) {
+void MmapFileReader::Get(char& ch) {
     if (current_pos_ < file_size_) {
         ch = data_[current_pos_++];
     } else {
@@ -85,7 +85,7 @@ void MmapFile::Get(char& ch) {
     }
 }
 
-std::string MmapFile::ReadLine() {
+std::string MmapFileReader::ReadLine() {
     std::string line;
     while (current_pos_ < file_size_ && data_[current_pos_] != '\n') {
         line += data_[current_pos_++];
@@ -151,7 +151,7 @@ std::shared_ptr<IStream> GetInputStream(const std::string& path) {
     if (path == "-") {
         return std::make_shared<StdinStream>();
     } else {
-        return std::make_shared<MmapFile>(path.c_str());
+        return std::make_shared<MmapFileReader>(path.c_str());
     }
 }
 

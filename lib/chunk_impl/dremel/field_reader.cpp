@@ -3,7 +3,6 @@
 #include <filesystem>
 
 #include <lib/chunk_impl/common.h>
-#include <lib/chunk_impl/get_stream.h>
 
 namespace lib::chunk_impl::dremel {
 

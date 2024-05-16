@@ -143,8 +143,7 @@ void RunGenerateDataset(DatasetGeneratorArgs&& args) {
     std::srand(std::time(nullptr));
 
     auto istream = lib::chunk_impl::GetInputStream(args.schema_path);
-    std::string schema_json_str;
-    *istream >> schema_json_str;
+    std::string schema_json_str = istream->ReadLine();
 
     rapidjson::Document schema;
 

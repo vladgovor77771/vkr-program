@@ -18,10 +18,10 @@ public:
     virtual std::string ReadLine() = 0;
 };
 
-class MmapFile: public IStream {
+class MmapFileReader: public IStream {
 public:
-    MmapFile(const char* filename);
-    ~MmapFile();
+    MmapFileReader(const char* filename);
+    ~MmapFileReader();
 
     void Seekg(int offset, std::ios_base::seekdir dir = std::ios_base::cur) override;
     int Peek() const override;

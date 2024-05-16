@@ -11,6 +11,7 @@ std::optional<ControlChar> ReadControlChar(IStream& stream) {
     if (ch == EOF) {
         return std::nullopt;
     }
+    stream.Seekg(1);
 
     return static_cast<ControlChar>(ch);
 }
