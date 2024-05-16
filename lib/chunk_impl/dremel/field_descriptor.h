@@ -63,6 +63,7 @@ public:
 
     bool IsLeaf() const;
     bool IsRoot() const;
+    bool HasAnyChild() const;
 
     std::string ConstructPath() const;
     std::string ToString() const;

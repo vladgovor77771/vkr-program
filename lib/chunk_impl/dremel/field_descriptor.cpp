@@ -57,6 +57,9 @@ bool FieldDescriptor::IsLeaf() const {
 bool FieldDescriptor::IsRoot() const {
     return parent_ == nullptr;
 }
+bool FieldDescriptor::HasAnyChild() const {
+    return !children_.empty();
+}
 
 std::string FieldDescriptor::ConstructPath() const {
     if (IsRoot()) {

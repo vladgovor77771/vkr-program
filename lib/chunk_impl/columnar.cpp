@@ -5,11 +5,10 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include <lib/chunk_impl/get_stream.h>
-
 #include <lib/chunk_impl/dremel/assembly.h>
 #include <lib/chunk_impl/dremel/field_reader.h>
 #include <lib/chunk_impl/dremel/field_writer.h>
+#include <lib/chunk_impl/get_stream.h>
 
 namespace lib::chunk_impl {
 
@@ -113,6 +112,9 @@ std::vector<std::shared_ptr<document::Document>> ColumnarChunk::Read(const TreeN
     const auto path_ptr = std::make_shared<std::string>(path);
     auto root_field_reader = std::make_shared<dremel::FieldReader>(path_ptr, nullptr, "__root__", dremel::FieldLabel::Optional, dremel::FieldType::Object, 0, 0);
     RecurseCreateReadersTree(schema, root_field_reader, tree);
+    if (!root_field_reader->HasAnyChild()) {
+        return {};
+    }
 
     dremel::RecordReader reader(root_field_reader);
     std::vector<std::shared_ptr<document::Document>> res;
@@ -133,6 +135,9 @@ void ColumnarChunk::Write(const std::vector<std::shared_ptr<document::Document>>
     const auto path_ptr = std::make_shared<std::string>(path);
     auto root_field_writer = std::make_shared<dremel::FieldWriter>(path_ptr, nullptr, "__root__", dremel::FieldLabel::Optional, dremel::FieldType::Object, 0, 0);
     RecurseCreateWritersTree(schema, root_field_writer);
+    if (!root_field_writer->HasAnyChild()) {
+        return;
+    }
 
     // std::cerr << root_field_writer->Dump() << '\n';
     for (const auto& doc : documents) {
