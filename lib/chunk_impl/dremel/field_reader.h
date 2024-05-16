@@ -15,7 +15,7 @@ class FieldReader: public FieldDescriptor {
 private:
     std::size_t field_index_;
     std::shared_ptr<std::string> chunk_path_;
-    std::shared_ptr<std::istream> GetOrCreateStream();
+    std::shared_ptr<IStream> GetOrCreateStream();
 
 public:
     FieldReader() = delete;
@@ -24,7 +24,7 @@ public:
     FieldReader& operator=(const FieldReader&) = delete;
     FieldReader& operator=(FieldReader&&) = delete;
 
-    std::shared_ptr<std::istream> stream;
+    std::shared_ptr<IStream> stream;
 
     FieldReader(
         const std::shared_ptr<std::string>& chunk_path,

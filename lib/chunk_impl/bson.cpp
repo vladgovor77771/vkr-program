@@ -9,31 +9,31 @@ namespace lib::chunk_impl {
 
 namespace {
 
-    void SkipValue(std::istream& stream) {
+    void SkipValue(IStream& stream) {
         auto cch = ReadControlChar(stream);
 
         switch (*cch) {
             case ControlChar::kNullFlag:
                 return;
             case ControlChar::kBooleanFlag: {
-                stream.ignore(1);
+                stream.Seekg(1);
                 return;
             }
             case ControlChar::kInt32Flag:
             case ControlChar::kUint32Flag:
             case ControlChar::kFloat32Flag:
-                stream.ignore(4);
+                stream.Seekg(4);
                 return;
             case ControlChar::kInt64Flag:
             case ControlChar::kUint64Flag:
             case ControlChar::kFloat64Flag:
-                stream.ignore(8);
+                stream.Seekg(8);
                 return;
             case ControlChar::kStringFlag:
             case ControlChar::kDocumentFlag:
             case ControlChar::kListFlag: {
                 auto length = Read4Bytes(stream);
-                stream.ignore(length);
+                stream.Seekg(length);
                 return;
             }
             default:
@@ -41,7 +41,7 @@ namespace {
         }
     }
 
-    std::optional<std::shared_ptr<document::Value>> ReadValue(std::istream& stream, const TreeNodePtr& root) {
+    std::optional<std::shared_ptr<document::Value>> ReadValue(IStream& stream, const TreeNodePtr& root) {
         const auto cch = ReadControlChar(stream);
         if (!cch.has_value()) {
             return std::nullopt;
@@ -54,16 +54,14 @@ namespace {
         switch (*cch) {
             case ControlChar::kDocumentFlag: {
                 auto length = Read4Bytes(stream);
-                auto end = stream.tellg();
+                auto end = stream.Tellg();
                 end += length;
 
                 document::ValueMap doc_map;
-                while (stream.tellg() < end) {
+                while (stream.Tellg() < end) {
                     auto key_length = Read4Bytes(stream);
                     char buffer[key_length];
-                    if (!stream.read(buffer, key_length)) {
-                        throw std::runtime_error("Failed to read length bytes from stream.");
-                    }
+                    stream.Read(buffer, key_length);
                     auto key = std::string(buffer, key_length);
                     if (root->IsLeaf()) {
                         auto maybe_v = ReadValue(stream, root);
@@ -86,11 +84,11 @@ namespace {
             }
             case ControlChar::kListFlag: {
                 auto length = Read4Bytes(stream);
-                auto end = stream.tellg();
+                auto end = stream.Tellg();
                 end += length;
 
                 document::ValueList list;
-                while (stream.tellg() < end) {
+                while (stream.Tellg() < end) {
                     auto maybe_v = ReadValue(stream, root);
                     if (!maybe_v.has_value()) {
                         throw std::runtime_error("Unexpected end of file");

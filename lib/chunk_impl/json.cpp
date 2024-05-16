@@ -91,9 +91,9 @@ namespace {
 std::vector<std::shared_ptr<document::Document>> JsonChunk::Read(const TreeNodePtr& tree) const {
     auto stream = GetInputStream(path);
 
-    std::string line;
     std::vector<std::shared_ptr<document::Document>> res;
-    while (getline(*stream, line, '\n')) {
+    while (!stream->Eof()) {
+        std::string line = stream->ReadLine();
         if (line.empty()) {
             break;
         }

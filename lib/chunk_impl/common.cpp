@@ -6,11 +6,12 @@
 
 namespace lib::chunk_impl {
 
-std::optional<ControlChar> ReadControlChar(std::istream& stream) {
-    char ch;
-    if (!stream.get(ch)) {
+std::optional<ControlChar> ReadControlChar(IStream& stream) {
+    char ch = stream.Peek();
+    if (ch == EOF) {
         return std::nullopt;
     }
+
     return static_cast<ControlChar>(ch);
 }
 
@@ -31,13 +32,13 @@ bool IsPrimitiveControlChar(ControlChar cch) {
     }
 }
 
-std::shared_ptr<document::Value> ReadPrimitiveValue(ControlChar cch, std::istream& stream) {
+std::shared_ptr<document::Value> ReadPrimitiveValue(ControlChar cch, IStream& stream) {
     switch (cch) {
         case ControlChar::kNullFlag:
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Null>());
         case ControlChar::kBooleanFlag: {
             char ch;
-            stream.get(ch);
+            stream.Get(ch);
             return std::static_pointer_cast<document::Value>(std::make_shared<document::Boolean>(static_cast<bool>(ch)));
         }
         case ControlChar::kInt32Flag: {
@@ -131,13 +132,10 @@ std::vector<char> SerializePrimitiveValue(const std::shared_ptr<document::Value>
     }
 }
 
-uint64_t Read8Bytes(std::istream& stream) {
+uint64_t Read8Bytes(IStream& stream) {
     std::uint64_t result = 0;
     char buffer[8];
-
-    if (!stream.read(buffer, 8)) {
-        throw std::runtime_error("Failed to read 8 bytes from stream.");
-    }
+    stream.Read(buffer, 8);
 
     result = static_cast<uint64_t>(static_cast<uint8_t>(buffer[0])) |
              (static_cast<uint64_t>(static_cast<uint8_t>(buffer[1])) << 8) |
@@ -151,13 +149,10 @@ uint64_t Read8Bytes(std::istream& stream) {
     return result;
 }
 
-uint16_t Read2Bytes(std::istream& stream) {
+uint16_t Read2Bytes(IStream& stream) {
     std::uint16_t result = 0;
     char buffer[2];
-
-    if (!stream.read(buffer, 2)) {
-        throw std::runtime_error("Failed to read 2 bytes from stream.");
-    }
+    stream.Read(buffer, 2);
 
     result = static_cast<uint8_t>(buffer[0]) |
              (static_cast<uint8_t>(buffer[1]) << 8);
@@ -165,13 +160,10 @@ uint16_t Read2Bytes(std::istream& stream) {
     return result;
 }
 
-uint32_t Read4Bytes(std::istream& stream) {
+uint32_t Read4Bytes(IStream& stream) {
     std::uint32_t result = 0;
     char buffer[4];
-
-    if (!stream.read(buffer, 4)) {
-        throw std::runtime_error("Failed to read 4 bytes from stream.");
-    }
+    stream.Read(buffer, 4);
 
     result = static_cast<uint8_t>(buffer[0]) |
              (static_cast<uint8_t>(buffer[1]) << 8) |
@@ -181,26 +173,24 @@ uint32_t Read4Bytes(std::istream& stream) {
     return result;
 }
 
-float ReadFloat(std::istream& stream) {
+float ReadFloat(IStream& stream) {
     auto temp = Read4Bytes(stream);
     float res;
     std::memcpy(&res, &temp, sizeof(float));
     return res;
 }
 
-double ReadDouble(std::istream& stream) {
+double ReadDouble(IStream& stream) {
     auto temp = Read8Bytes(stream);
     double res;
     std::memcpy(&res, &temp, sizeof(double));
     return res;
 }
 
-std::string ReadString(std::istream& stream) {
+std::string ReadString(IStream& stream) {
     auto length = Read4Bytes(stream);
     char buffer[length];
-    if (!stream.read(buffer, length)) {
-        throw std::runtime_error("Failed to read bytes from stream, tried to read string of length " + std::to_string(length));
-    }
+    stream.Read(buffer, length);
     return std::string(buffer, length);
 }
 

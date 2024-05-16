@@ -20,7 +20,7 @@ FieldReader::FieldReader(
     field_index_ = SIZE_MAX;
 }
 
-std::shared_ptr<std::istream> FieldReader::GetOrCreateStream() {
+std::shared_ptr<IStream> FieldReader::GetOrCreateStream() {
     if (stream != nullptr) {
         return stream;
     }
@@ -59,7 +59,7 @@ RepetitionLevel FieldReader::NextRepetitionLevel() {
         return 0;
     }
     const auto r = Read4Bytes(*stream);
-    stream->seekg(-4, std::ios_base::cur);
+    stream->Seekg(-4);
     return r;
 }
 
@@ -82,7 +82,7 @@ bool FieldReader::IsDone() {
         throw std::logic_error("Tried to check IsDone on non-leaf node");
     }
     stream = GetOrCreateStream();
-    return stream->peek() == EOF;
+    return stream->Peek() == EOF;
 }
 
 } // namespace lib::chunk_impl::dremel
