@@ -27,7 +27,11 @@ int main(int argc, char** argv) {
         "Read data of specified format and possibly write to stdout. Partial read supported.");
     read->add_option("--path", read_args.path, "Path to data file.")->required();
     read->add_option("--format", read_args.format, "Data format.")->required();
-    read->add_option("--columns", read_args.columns, "Columns to read.");
+    auto columns_opt = read->add_option("--columns", read_args.columns, "Columns to read.");
+    auto columns_file_opt = read->add_option("--columns-file", read_args.columns_file, "File path with columns to read.");
+    columns_opt->excludes(columns_file_opt);
+    columns_file_opt->excludes(columns_opt);
+
     read->add_option("--schema-path", read_args.schema_path, "Schema for columnar format.");
     read->add_option("--write-to-stdout", read_args.write_to_stdout, "Write output to stdout in JSONLINE format.")->default_val(false);
 

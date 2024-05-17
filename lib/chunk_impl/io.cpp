@@ -14,7 +14,7 @@ MmapFileReader::MmapFileReader(const char* filename)
     : current_pos_(0) {
     fd_ = open(filename, O_RDONLY);
     if (fd_ == -1) {
-        throw std::runtime_error("Failed to open file");
+        throw std::runtime_error(std::string("Failed to open input file: ") + filename + " " + strerror(errno));
     }
 
     file_size_ = lseek(fd_, 0, SEEK_END);
@@ -126,7 +126,7 @@ MmapFileWriter::MmapFileWriter(const char* filename, std::size_t initial_size)
     , data_(nullptr) {
     fd_ = open(filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (fd_ == -1) {
-        throw std::runtime_error("Failed to open file");
+        throw std::runtime_error(std::string("Failed to open output file: ") + filename + " " + strerror(errno));
     }
 
     Resize(size_);

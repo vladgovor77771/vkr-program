@@ -8,6 +8,7 @@ struct ReadArgs {
     std::string path;
     std::string format;
     std::string columns;
+    std::string columns_file;
     std::string schema_path;
 
     bool write_to_stdout;

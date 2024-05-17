@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include <bin/lib/common.h>
+#include <lib/chunk_impl/io.h>
 
 namespace cli {
 
@@ -50,13 +51,23 @@ namespace {
         }
     }
 
-    lib::chunk_impl::TreeNodePtr BuildPrefixTree(std::string&& csv_columns) {
+    lib::chunk_impl::TreeNodePtr BuildPrefixTree(std::string&& csv_columns, std::string&& csv_columns_file) {
         auto root = lib::chunk_impl::TreeNode::Default();
-        if (csv_columns.empty()) {
+        if (csv_columns.empty() && csv_columns_file.empty()) {
             return root;
         }
 
-        std::istringstream iss(std::move(csv_columns));
+        std::istringstream iss;
+        if (csv_columns_file.empty()) {
+            iss = std::istringstream(std::move(csv_columns));
+        } else {
+            auto reader = lib::chunk_impl::GetInputStream(std::move(csv_columns_file));
+            auto cols = reader->ReadLine();
+            if (cols.empty()) {
+                return root;
+            }
+            iss = std::istringstream(std::move(cols));
+        }
         std::string column;
 
         while (getline(iss, column, ',')) {
@@ -70,7 +81,7 @@ namespace {
 
 void RunRead(ReadArgs&& args) {
     const auto chunk = GetChunk(std::move(args.path), std::move(args.format), std::move(args.schema_path));
-    const auto columns_tree = BuildPrefixTree(std::move(args.columns));
+    const auto columns_tree = BuildPrefixTree(std::move(args.columns), std::move(args.columns_file));
 
     const auto start = std::chrono::high_resolution_clock::now();
     const auto documents = chunk->Read(columns_tree);

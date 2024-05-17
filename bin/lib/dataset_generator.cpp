@@ -169,7 +169,7 @@ void RunGenerateDataset(DatasetGeneratorArgs&& args) {
 
         ostream->Write(buffer.GetString(), buffer.GetLength());
         ostream->Write("\n", 1);
-        std::cerr << "Generated " << i << '/' << args.docs_count << " documents\n";
+        std::cerr << "Generated " << i + 1 << '/' << args.docs_count << " documents\n";
     }
 }
 
